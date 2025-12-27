@@ -345,7 +345,7 @@ export default function Search() {
     }
 
     const layer = new GeoJSONLayer({
-      url: `http://127.0.0.1:8000/api/stacov/?date=${date}`,
+      url: `https://geodetic-backend.vercel.app/api/stacov/?date=${date}`,
       outFields: ["*"],
 
       elevationInfo: {
@@ -553,4 +553,4 @@ export default function Search() {
       </div>
     </div>
   );
-}
+} 
