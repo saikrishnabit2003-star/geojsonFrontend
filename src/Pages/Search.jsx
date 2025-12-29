@@ -17,9 +17,8 @@ import Bookmark from "@arcgis/core/webmap/Bookmark";
 
 import esriConfig from "@arcgis/core/config.js"; 
 esriConfig.apiKey = 'AAPTxy8BH1VEsoebNVZXo8HurAU2wRtTCz35rS0IvyV5k0_FmOjKifjQ4MXaetOWAPxQ99ta0HCHYBSsLmJ-RxrEVoyLsT6hCItuii1Wq0Ctiu8ofOMIIcBYiR8_N3HQmOSC4MrerZZW_MiUovETiVP-I6qSZhn0k8qO1SF990cDX26ydD9ug32faqQlUjvebO0WHRrwPN3h0mdKEKlKMAZE8hjWCQHcEG7BM34DXJKiL7A.AT1_B2uSZ31B';
-
 import "@arcgis/core/assets/esri/themes/light/main.css";
-
+import styles from "./Search.module.css";
 export default function Search() {
   
   const mapDiv = useRef(null);
@@ -45,7 +44,7 @@ export default function Search() {
   const [is3D, setIs3D] = useState(false);
   const [stations3D, setStations3D] = useState(false);
   const [currentLayer, setCurrentLayer] = useState("layer1");
-
+const [sidebarVisible, setSidebarVisible] = useState(true);
   // ---------------- LAYER SWITCHING ----------------
   const handleLayerChange = (e) => {
     const selectedLayer = e.target.value;
@@ -425,132 +424,147 @@ export default function Search() {
 
   // ---------------- UI ----------------
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
-      <div style={{ width: "300px", padding: "20px", background: "#f5f5f5", overflowY: "auto" }}>
-        {/* Layer Selection */}
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
-            Select Layer:
-          </label>
-          <select 
-            onChange={handleLayerChange} 
-            value={currentLayer}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          >
-            <option value="layer1">Layer 1 (Stations)</option>
-            <option value="layer2">Layer 2 (Earthquakes)</option>
-          </select>
-        </div>
+ <div className={styles.container}>
+  {/* Sidebar */}
+  <div className={`${styles.sidebar} ${!sidebarVisible ? styles.sidebarHidden : ''}`}>
+    <button className={styles.closeButton} onClick={() => setSidebarVisible(false)}>
+      ✕
+    </button>
+   <div className={styles.sidebarContent}>
+  {/* Layer Selection */}
+  <div className={styles.layerSection}>
+    <label className={styles.label}>
+      Select Layer:
+    </label>
+    <select 
+      onChange={handleLayerChange} 
+      value={currentLayer}
+      className={styles.select}
+    >
+      <option value="layer1">Layer 1 (Stations)</option>
+      <option value="layer2">Layer 2 (Earthquakes)</option>
+    </select>
+  </div>
 
-        {/* Layer 1 Controls */}
-        {currentLayer === "layer1" && (
-          <>
-            <div style={{ marginBottom: "20px" }}>
-              <input 
-                type="number" 
-                placeholder="Longitude" 
-                value={lon} 
-                onChange={(e) => setLon(e.target.value)} 
-                style={{ width: "100%", marginBottom: "5px", padding: "8px" }}
-              />
-              <input 
-                type="number" 
-                placeholder="Latitude" 
-                value={lat} 
-                onChange={(e) => setLat(e.target.value)} 
-                style={{ width: "100%", marginBottom: "5px", padding: "8px" }}
-              />
-              <button 
-                onClick={handleSearch} 
-                style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-              >
-                Search
-              </button>
-              <input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
-                style={{ width: "100%", padding: "8px", marginBottom: "5px" }}
-              />
-              <button 
-                onClick={loadStations} 
-                style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-              >
-                Load Stations
-              </button>
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ fontSize: "13px", cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={stations3D}
-                  onChange={(e) => setStations3D(e.target.checked)}
-                  style={{ marginRight: "6px" }}
-                />
-                Show station in 3D (SceneView)
-              </label>
-            </div>
-          </>
-        )}
-
-        {/* Layer 2 Info */}
-        {currentLayer === "layer2" && (
-          <div style={{ padding: "10px", background: "#fff", border: "1px solid #ccc", borderRadius: "4px", marginBottom: "20px" }}>
-            <h3 style={{ marginTop: 0 }}>Earthquake Layer</h3>
-            <p style={{ fontSize: "13px" }}>
-              Displaying all earthquakes from the past year and months. 
-              Circle size represents magnitude.
-            </p>
-          </div>
-        )}
-
-        {/* Common Controls */}
-        <div style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "4px", marginBottom: "10px" }}>
-          <div style={{ fontSize: "12px", marginBottom: "5px" }}>
-            <strong>Lon:</strong> {currentCoords[0].toFixed(6)}
-          </div>
-          <div style={{ fontSize: "12px", marginBottom: "8px" }}>
-            <strong>Lat:</strong> {currentCoords[1].toFixed(6)}
-          </div>
-          <button 
-            onClick={() => setShowBookmarkInput(!showBookmarkInput)} 
-            style={{ width: "100%", padding: "8px", background: "#0079c1", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold" }}
-          >
-            {showBookmarkInput ? "❌ Cancel" : "Add Bookmark"}
-          </button>
-        </div>
-
-        {showBookmarkInput && (
-          <div style={{ marginBottom: "15px", padding: "10px", background: "#fff", border: "2px solid #0079c1", borderRadius: "4px" }}>
-            <input 
-              placeholder="Enter bookmark name..." 
-              value={bookmarkName} 
-              onChange={(e) => setBookmarkName(e.target.value)} 
-              onKeyPress={(e) => e.key === "Enter" && addBookmark()} 
-              autoFocus 
-              style={{ width: "100%", padding: "8px", marginBottom: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
-            <button 
-              onClick={addBookmark} 
-              style={{ width: "100%", padding: "8px", background: "#28a745", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold" }}
-            >
-              Save Bookmark
-            </button>
-          </div>
-        )}
-
+  {/* Layer 1 Controls */}
+  {currentLayer === "layer1" && (
+    <>
+      <div className={styles.controlsSection}>
+        <input 
+          type="number" 
+          placeholder="Longitude" 
+          value={lon} 
+          onChange={(e) => setLon(e.target.value)} 
+          className={styles.input}
+        />
+        <input 
+          type="number" 
+          placeholder="Latitude" 
+          value={lat} 
+          onChange={(e) => setLat(e.target.value)} 
+          className={styles.input}
+        />
         <button 
-          onClick={clearAllBookmarks} 
-          style={{ width: "100%", padding: "8px", background: "#dc3545", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold", marginBottom: "10px" }}
+          onClick={handleSearch} 
+          className={styles.button}
         >
-          Clear All Bookmarks
+          Search
+        </button>
+        <input 
+          type="date" 
+          value={date} 
+          onChange={(e) => setDate(e.target.value)} 
+          className={styles.input}
+        />
+        <button 
+          onClick={loadStations} 
+          className={styles.button}
+        >
+          Load Stations
         </button>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <div ref={mapDiv} style={{ width: "100%", height: "100%" }} />
+      <div className={styles.checkboxSection}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={stations3D}
+            onChange={(e) => setStations3D(e.target.checked)}
+          />
+          Show station in 3D (SceneView)
+        </label>
       </div>
+    </>
+  )}
+
+  {/* Layer 2 Info */}
+  {currentLayer === "layer2" && (
+    <div className={styles.earthquakeInfo}>
+      <h3>Earthquake Layer</h3>
+      <p>
+        Displaying all earthquakes from the past year and months. 
+        Circle size represents magnitude.
+      </p>
     </div>
+  )}
+
+  {/* Common Controls */}
+  <div className={styles.coordsBox}>
+    <div className={styles.coordsText}>
+      <strong>Lon:</strong> {currentCoords[0].toFixed(6)}
+    </div>
+    <div className={styles.coordsText}>
+      <strong>Lat:</strong> {currentCoords[1].toFixed(6)}
+    </div>
+  </div>
+  
+  <button 
+    onClick={() => setShowBookmarkInput(!showBookmarkInput)} 
+    className={styles.bookmarkButton}
+  >
+    {showBookmarkInput ? "❌ Cancel" : "📍 Add Bookmark"}
+  </button>
+
+  {showBookmarkInput && (
+    <div className={styles.bookmarkInput}>
+      <input 
+        placeholder="Enter bookmark name..." 
+        value={bookmarkName} 
+        onChange={(e) => setBookmarkName(e.target.value)} 
+        onKeyPress={(e) => e.key === "Enter" && addBookmark()} 
+        autoFocus 
+      />
+      <button 
+        onClick={addBookmark} 
+        className={styles.saveButton}
+      >
+        Save Bookmark
+      </button>
+    </div>
+  )}
+
+  <button 
+    onClick={clearAllBookmarks} 
+    className={styles.clearButton}
+  >
+    🗑️ Clear All Bookmarks
+  </button>
+</div>
+  </div>
+
+  {/* Toggle Button */}
+  <button 
+    className={`${styles.toggleButton} ${sidebarVisible ? styles.toggleButtonHidden : ''}`}
+    onClick={() => setSidebarVisible(true)}
+  >
+    ☰ Menu
+  </button>
+
+  {/* Map */}
+  <div className={styles.mapContainer}>
+    <div ref={mapDiv} className={styles.mapDiv} />
+  </div>
+</div>
+
   );
 } 
